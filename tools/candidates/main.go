@@ -129,8 +129,8 @@ func run(corpus, rulesDir string, top, min int) error {
 	fmt.Printf("\nEach is used alongside AI you already detect but has no pack. Review the top:\n")
 	fmt.Printf("skip obvious non-frameworks and family variants (e.g. langchain-core). Coverage\n")
 	fmt.Printf("is name-based, so a candidate can be hidden by an unrelated pack of the same name\n")
-	fmt.Printf("(e.g. `instructor` the embedding model vs the LLM library) — spot-check names you\n")
-	fmt.Printf("expect to see. Then scaffold with `airom dev new-rulepack`.\n")
+	fmt.Printf("(one package name mapping to two different concepts) — spot-check names you expect\n")
+	fmt.Printf("to see. Then scaffold with `airom dev new-rulepack`.\n")
 	return nil
 }
 
