@@ -80,7 +80,7 @@ func run(corpus, rulesDir string, top, min int) error {
 		}
 		aiRepoCount++
 		for sq, disp := range deps {
-			if covered[sq] || stoplist[sq] || len(sq) < 2 {
+			if covered[sq] || stoplist[sq] || len(sq) < 2 || scopedNoise(disp) {
 				continue
 			}
 			s := cands[sq]
@@ -138,9 +138,14 @@ func run(corpus, rulesDir string, top, min int) error {
 
 var coverField = regexp.MustCompile(`(?m)^\s*(?:pack|provider):\s*["']?([A-Za-z0-9][A-Za-z0-9._-]*)`)
 var idField = regexp.MustCompile(`(?m)^\s*-\s+id:\s*["']?([A-Za-z0-9][A-Za-z0-9._-]*)/`)
+var keywordTok = regexp.MustCompile(`["']([^"']+)["']`)
 
 // loadCoverage builds the set of framework tokens the packs already cover, from
-// each pack's pack:/provider: values and rule id prefixes (all squashed).
+// each pack's pack:/provider: values, rule id prefixes, AND rule keywords — the
+// keywords carry the real import/package literals (the `chroma` pack's keyword
+// is "chromadb"), so harvesting them catches package names that differ from the
+// pack name. All squashed. Class-name keywords ("ChatOpenAI") are harmless: a
+// candidate only matches on exact squashed equality.
 func loadCoverage(rulesDir string) (map[string]bool, error) {
 	covered := map[string]bool{}
 	err := filepath.WalkDir(rulesDir, func(p string, d fs.DirEntry, err error) error {
@@ -165,6 +170,16 @@ func loadCoverage(rulesDir string) (map[string]bool, error) {
 		}
 		for _, m := range idField.FindAllSubmatch(data, -1) {
 			covered[squash(string(m[1]))] = true
+		}
+		for _, ln := range strings.Split(string(data), "\n") {
+			if !strings.Contains(ln, "keywords:") {
+				continue
+			}
+			for _, m := range keywordTok.FindAllStringSubmatch(ln, -1) {
+				if t := leadingName(strings.TrimPrefix(strings.TrimSpace(m[1]), "@")); len(t) >= 3 {
+					covered[squash(t)] = true
+				}
+			}
 		}
 		return nil
 	})
@@ -369,11 +384,24 @@ func squash(s string) string {
 	return b.String()
 }
 
-// stoplist is common non-AI infrastructure to exclude from candidates (squashed).
-// Edit as the corpus surfaces new noise; over-listing only hides a candidate,
-// never marks it covered.
+// scopedNoise skips npm scopes that are never AI frameworks (build tooling and
+// type stubs). AI SDKs are also scoped (@langchain/*, @anthropic-ai/*), so only
+// the known-noise scopes are dropped, not all @-scoped packages.
+func scopedNoise(name string) bool {
+	for _, s := range []string{"@types/", "@vitejs/", "@testing-library/", "@eslint/", "@babel/", "@rollup/", "@typescript-eslint/", "@tailwindcss/", "@radix-ui/", "@heroicons/", "@headlessui/", "@floating-ui/"} {
+		if strings.HasPrefix(name, s) {
+			return true
+		}
+	}
+	return false
+}
+
+// stoplist is common non-AI/non-framework packages (infra, utilities, ML
+// plumbing) to exclude from candidates (squashed). It is INHERENTLY a curated,
+// growing list — this is the maintenance cost of name-based discovery. Over-
+// listing only hides a candidate, never marks it covered, so err toward adding.
 var stoplist = toSet(
-	// Python infra
+	// Python web/app infra
 	"numpy", "pandas", "scipy", "requests", "httpx", "aiohttp", "urllib3",
 	"pydantic", "pydanticsettings", "fastapi", "starlette", "flask", "django",
 	"uvicorn", "gunicorn", "sqlalchemy", "alembic", "redis", "celery", "boto3",
@@ -382,10 +410,32 @@ var stoplist = toSet(
 	"setuptools", "wheel", "pip", "matplotlib", "seaborn", "pillow", "orjson",
 	"ujson", "websockets", "typingextensions", "packaging", "protobuf", "grpcio",
 	"tenacity", "loguru", "structlog", "attrs", "cachetools", "certifi",
-	// Node infra
+	// Python utilities surfaced by real AI corpora (not frameworks)
+	"beautifulsoup4", "bs4", "colorama", "psutil", "python-multipart",
+	"charset-normalizer", "pyarrow", "aiohappyeyeballs", "anyio", "distro",
+	"gitpython", "jsonschema", "pyjwt", "posthog", "idna", "sniffio", "h11",
+	"httpcore", "six", "python-dateutil", "pytz", "markupsafe", "filelock",
+	"fsspec", "regex", "pyparsing", "frozenlist", "multidict", "yarl",
+	"aiosignal", "greenlet", "mdurl", "shellingham", "watchdog", "tornado",
+	"nest-asyncio", "pyzmq", "psycopg2", "psycopg2-binary", "asyncpg", "pymongo",
+	"pytest-asyncio", "cryptography", "annotated-types", "docstring-parser",
+	"jiter", "jsonpointer", "jsonpatch", "deprecated", "wrapt", "blinker",
+	"itsdangerous", "werkzeug", "sortedcontainers", "tabulate", "humanize",
+	// ML/data plumbing (infrastructure, not an app framework)
+	"torch", "torchvision", "torchaudio", "accelerate", "tokenizers",
+	"safetensors", "sentencepiece", "einops", "scikit-learn", "sklearn",
+	"xgboost", "lightgbm", "onnx", "onnxruntime", "huggingface-hub", "tiktoken",
+	"nltk", "opencv-python", "opencv-python-headless", "scikit-image", "sympy",
+	"networkx", "joblib", "threadpoolctl", "datasets", "evaluate",
+	// Node/JS build & web infra
 	"react", "reactdom", "vue", "svelte", "next", "express", "lodash", "axios",
 	"typescript", "eslint", "prettier", "jest", "vitest", "webpack", "vite",
-	"rollup", "tailwindcss", "zod", "dotenvcli",
+	"rollup", "tailwindcss", "zod", "dotenvcli", "clsx", "concurrently",
+	"cross-env", "postcss", "autoprefixer", "esbuild", "tsx", "tsup", "nodemon",
+	"classnames", "uuid", "dayjs", "moment", "commander", "chalk", "inquirer",
+	"vitepluginreact", "testinglibraryreact", "class-variance-authority", "cmdk",
+	"date-fns", "dompurify", "katex", "eslint-config-next", "lucide-react",
+	"framer-motion", "react-markdown", "remark", "rehype", "highlight.js",
 )
 
 func toSet(items ...string) map[string]bool {
