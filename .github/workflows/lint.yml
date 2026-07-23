@@ -1,0 +1,38 @@
+name: Lint rule packs
+
+# Every pack must pass airom's own validator (the full lint contract + fixture
+# coverage) and its fixtures — no reinvented checks. This runs airom itself, so
+# the RE2 regex engine and schema exactly match what a scan will enforce.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Pin airom so the lint contract is reproducible; bump deliberately.
+      - name: Install airom
+        run: pip install airom
+
+      - name: Lint and test every pack
+        run: |
+          set -uo pipefail
+          fail=0
+          while IFS= read -r pack; do
+            echo "::group::$pack"
+            airom rules lint "$pack" || fail=1
+            airom rules test "$pack" || fail=1
+            echo "::endgroup::"
+          done < <(find rules -name '*.yaml' -not -path '*/testdata/*' | sort)
+          exit $fail

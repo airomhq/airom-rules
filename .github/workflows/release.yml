@@ -1,0 +1,36 @@
+name: Release bundle
+
+# On a v* tag, build a deterministic, signed rule bundle and attach it to the
+# GitHub release. airom fetches these three assets from
+# /releases/download/<tag>/ (pinned) or /releases/latest/download/ (latest),
+# verifies the ed25519 signature against its embedded public key, checks the
+# tarball SHA-256 against the signed manifest, then extracts.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write # create the release and upload assets
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+
+      - name: Build and sign the bundle
+        env:
+          AIROM_RULES_SIGNING_KEY: ${{ secrets.AIROM_RULES_SIGNING_KEY }}
+        run: go run ./tools/bundle -rules rules -version "${GITHUB_REF_NAME}" -out dist
+
+      - name: Attach assets to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/airom-rules.tar.gz
+            dist/manifest.json
+            dist/manifest.json.sig

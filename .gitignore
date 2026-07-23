@@ -1,0 +1,7 @@
+# Build output of tools/bundle.
+/dist/
+
+# Never commit a signing key.
+*.key
+*.key.b64
+*.pem
