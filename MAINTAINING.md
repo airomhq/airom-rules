@@ -10,6 +10,28 @@ pip install airom          # the validator + the tool users run (airom rules lin
 # Go 1.25+ only if you want to build a bundle locally (tools/bundle)
 ```
 
+## Finding what to add (don't pick names by hand)
+
+Let usage data rank the backlog. `tools/candidates` scans a corpus of real repos
+and reports AI-adjacent dependencies that appear **alongside frameworks you
+already cover** but have **no pack**, ranked by how many AI repos use each.
+
+```bash
+# 1. build a corpus — each immediate subdirectory is one repo
+mkdir ~/ai-corpus
+gh repo clone <owner>/<repo> ~/ai-corpus/<repo>   # a batch of llm/agents/rag repos
+
+# 2. from the airom-rules root, run the gap report
+go run ./tools/candidates -corpus ~/ai-corpus              # ranked candidates
+go run ./tools/candidates -corpus ~/ai-corpus -min 3 -top 60
+```
+
+The top of the list is your queue. Coverage is **name-based**, so skip family
+variants (`langchain-core`) and spot-check for **name collisions** — a pack named
+for one concept can hide a different package of the same name (e.g. `instructor`
+the embedding model vs the LLM library). Then scaffold the winner with
+`airom dev new-rulepack` and follow the next section.
+
 ## Add or update a rule pack
 
 1. **Write the pack** under `rules/<category>/<provider>.yaml`. Categories:

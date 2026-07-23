@@ -16,6 +16,13 @@ lint:
 bundle:
 	go run ./tools/bundle -rules rules -version v0.0.0-local -out dist -unsigned
 
+# Ranked "what to add next" gap report over a corpus of cloned repos.
+# Usage: make candidates CORPUS=~/ai-corpus
+.PHONY: candidates
+candidates:
+	@test -n "$(CORPUS)" || { echo "set CORPUS=<dir of cloned repos>"; exit 1; }
+	go run ./tools/candidates -corpus $(CORPUS)
+
 # Remove local build output.
 .PHONY: clean
 clean:
