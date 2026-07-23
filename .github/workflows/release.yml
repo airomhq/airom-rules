@@ -45,6 +45,21 @@ jobs:
         with:
           go-version: "1.25"
 
+      # Gate: never ship a bundle that fails airom's own validator. PRs are
+      # already linted, but a direct push to main isn't — so re-check here.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate every pack before releasing
+        run: |
+          pip install airom
+          fail=0
+          while IFS= read -r pack; do
+            airom rules lint "$pack" || fail=1
+            airom rules test "$pack" || fail=1
+          done < <(find rules -name '*.yaml' -not -path '*/testdata/*' | sort)
+          exit $fail
+
       - name: Determine the next version
         id: ver
         run: |
