@@ -1,0 +1,24 @@
+# rules/frameworks/mcp.yaml — Model Context Protocol (MCP) SDK usage.
+pack: mcp
+version: 1
+rules:
+  - id: mcp/import
+    kind: framework
+    provider: mcp
+    languages: [python]
+    keywords: ["mcp"]
+    pattern: '\b(?:import|from)\s+mcp\b'
+    regions: [code]
+    claim: { name: "mcp" }
+    confidence: 0.7
+
+  # FastMCP is the MCP SDK's server entrypoint — distinctive to the protocol.
+  - id: mcp/construct
+    kind: framework
+    provider: mcp
+    languages: [python]
+    keywords: ["FastMCP"]
+    pattern: '\bFastMCP\s*\('
+    regions: [code]
+    claim: { name: "mcp" }
+    confidence: 0.7
