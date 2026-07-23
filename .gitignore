@@ -8,3 +8,4 @@
 
 # Compiled tools/bundle binary if built in-tree.
 /bundle
+/candidates
