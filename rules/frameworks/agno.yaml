@@ -1,0 +1,25 @@
+# rules/frameworks/agno.yaml — Agno agent framework usage.
+pack: agno
+version: 1
+rules:
+  - id: agno/import
+    kind: framework
+    provider: agno
+    languages: [python]
+    keywords: ["agno"]
+    pattern: '\b(?:import|from)\s+agno\b'
+    regions: [code]
+    claim: { name: "agno" }
+    confidence: 0.75
+
+  # AgentOS is Agno's runtime entrypoint — distinctive; the bare Agent class is
+  # too generic across frameworks to key on.
+  - id: agno/agentos
+    kind: framework
+    provider: agno
+    languages: [python]
+    keywords: ["AgentOS"]
+    pattern: '\bAgentOS\s*\('
+    regions: [code]
+    claim: { name: "agno" }
+    confidence: 0.7
