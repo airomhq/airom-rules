@@ -5,3 +5,6 @@
 *.key
 *.key.b64
 *.pem
+
+# Compiled tools/bundle binary if built in-tree.
+/bundle
