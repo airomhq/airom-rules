@@ -21,8 +21,9 @@ Full detail in [MAINTAINING.md](MAINTAINING.md). In short:
 2. Validate exactly as CI does: `make lint` (or `airom rules lint|test <pack>`).
    Requires `pip install airom`.
 3. PR → the lint workflow gates it.
-4. Ship to users: `git tag vX.Y.Z && git push origin vX.Y.Z` → CI builds a
-   deterministic tarball, signs the manifest (ed25519), and attaches the bundle.
+4. Ship to users: **nothing to do** — merging a pack change to `main` auto-cuts a
+   signed bundle release (version patch-bumps automatically, independent of
+   airom's version). Force a version with `gh workflow run release.yml -f version=vX.Y.Z`.
 
 ## Facts that aren't obvious from the code
 

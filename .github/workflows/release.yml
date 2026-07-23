@@ -1,35 +1,79 @@
 name: Release bundle
 
-# On a v* tag, build a deterministic, signed rule bundle and attach it to the
-# GitHub release. airom fetches these three assets from
-# /releases/download/<tag>/ (pinned) or /releases/latest/download/ (latest),
-# verifies the ed25519 signature against its embedded public key, checks the
-# tarball SHA-256 against the signed manifest, then extracts.
+# Rule bundles are cut AUTOMATICALLY whenever a pack changes on main, so airom's
+# product version never has to move for a rules change. The version auto-
+# increments (patch) from the latest release. Fixture-only edits don't trigger a
+# release (they don't change the bundle). workflow_dispatch can force a specific
+# version, e.g. a minor bump for a big batch.
+#
+# airom fetches the three assets below from /releases/latest/download/ (or
+# /releases/download/<tag>/ when pinned), verifies the ed25519 signature against
+# its embedded public key, checks the tarball SHA-256 against the signed
+# manifest, then extracts.
 
 on:
   push:
-    tags: ["v*"]
+    branches: [main]
+    paths:
+      - "rules/**/*.yaml"
+      - "!rules/**/testdata/**"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Explicit version, e.g. v0.2.0 (blank = auto patch-bump)"
+        required: false
+        default: ""
 
 permissions:
-  contents: write # create the release and upload assets
+  contents: write # create the tag, release, and upload assets
+
+# Serialize releases so two quick pushes can't both compute the same next
+# version; the second waits, then bumps from the tag the first created.
+concurrency:
+  group: release-bundle
+  cancel-in-progress: false
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # need the tag history to compute the next version
+
       - uses: actions/setup-go@v5
         with:
           go-version: "1.25"
 
+      - name: Determine the next version
+        id: ver
+        run: |
+          override='${{ github.event.inputs.version }}'
+          if [ -n "$override" ]; then
+            next="$override"
+          else
+            latest=$(git tag -l 'v*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+            if [ -z "$latest" ]; then
+              next="v0.1.0"
+            else
+              v=${latest#v}; IFS=. read -r maj min pat <<< "$v"
+              next="v${maj}.${min}.$((pat + 1))"
+            fi
+          fi
+          echo "version=$next" >> "$GITHUB_OUTPUT"
+          echo "Releasing $next"
+
       - name: Build and sign the bundle
         env:
           AIROM_RULES_SIGNING_KEY: ${{ secrets.AIROM_RULES_SIGNING_KEY }}
-        run: go run ./tools/bundle -rules rules -version "${GITHUB_REF_NAME}" -out dist
+        run: go run ./tools/bundle -rules rules -version "${{ steps.ver.outputs.version }}" -out dist
 
-      - name: Attach assets to the release
+      - name: Create the release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.ver.outputs.version }}
+          name: ${{ steps.ver.outputs.version }}
+          generate_release_notes: true
           files: |
             dist/airom-rules.tar.gz
             dist/manifest.json

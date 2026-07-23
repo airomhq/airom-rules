@@ -51,18 +51,22 @@ the embedding model vs the LLM library). Then scaffold the winner with
    ```
 4. Open a PR. The lint workflow gates it.
 
-## Cut a bundle release
+## Releases are automatic
 
-Bundles are versioned **independently of airom** (this repo's own `vMAJOR.MINOR.PATCH`).
+**You don't cut releases by hand.** Merging a pack change to `main` **auto-cuts a signed
+bundle release** — the version patch-bumps from the latest release, versioned
+**independently of airom** so airom's product version never moves for a rules change. Users
+get it with `airom rules update` (latest) or `airom rules update vX.Y.Z` (pinned).
+Fixture-only edits don't trigger a release (the bundle is unchanged).
+
+The workflow builds a deterministic tarball, writes `manifest.json`, signs it with the
+repo's ed25519 key, and attaches all three to the GitHub release.
+
+To force a specific version (e.g. a minor bump for a big batch), dispatch it:
 
 ```bash
-git tag -a v1.2.0 -m "v1.2.0 — <what changed>"
-git push origin v1.2.0
+gh workflow run release.yml -f version=v0.2.0   # blank input = auto patch-bump
 ```
-
-The release workflow builds a deterministic tarball, writes `manifest.json`, signs it with
-the repo's ed25519 key, and attaches all three to the GitHub release. Users get it with
-`airom rules update` (latest) or `airom rules update v1.2.0` (pinned).
 
 Inspect a bundle locally without signing:
 
