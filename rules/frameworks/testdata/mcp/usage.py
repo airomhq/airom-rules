@@ -1,11 +1,18 @@
 """Model Context Protocol (MCP) usage fixture — positive and negative cases."""
-from mcp.server.fastmcp import FastMCP  # airom: mcp/import
+import asyncio
 
-# airom: mcp/construct
-server = FastMCP("my-tools")
+from mcp import ClientSession  # airom: mcp/import
+from mcp.server.stdio import stdio_server
+
+
+async def serve(server) -> None:
+    # airom: mcp/server
+    async with stdio_server() as (read, write):
+        await server.run(read, write)
+
 
 # airom-ok: mcp/import
 note = "mcp server setup guide"
 
-# airom-ok: mcp/construct
-label = "FastMCP configuration notes"
+# airom-ok: mcp/server
+label = "ClientSession configuration notes"
