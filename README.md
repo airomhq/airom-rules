@@ -14,14 +14,21 @@ airom fs .                # scans now use it (see airom's docs)
 
 airom embeds a copy of these packs as its **offline floor** — it always works
 with no network. `airom rules update` fetches a newer bundle from this repo's
-releases, verifies it, and caches it; scans then prefer the cached bundle, and
-`--rules` overlays still layer on top. A scan itself never touches the network.
+releases, verifies it, and caches it; scans then use the cached bundle **instead
+of** the embedded packs, and `--rules` overlays still layer on top. A scan itself
+never touches the network.
+
+That "instead of" is the thing to remember: the bundle is the base layer, not an
+addition to it. For anyone who has run `rules update`, **this repo is their
+entire ruleset**, so it has to stay complete.
 
 - **This repo is the source of truth for rule content.** New/experimental/long-tail
   framework rules land here first and reach users via `rules update`.
 - **Stable rules get promoted upstream** into airom's embedded packs on airom's
-  own release cadence, then **deleted from this overlay** — so this repo stays a
-  fast-moving staging channel, not a shadow fork.
+  own release cadence — as a **copy, not a move**. Deleting a promoted pack here
+  removes it from every bundle user on their next update, whatever airom version
+  they run. See MAINTAINING.md, "The airom coupling", for what that cost on
+  2026-09-16 and what would make deletion safe.
 
 ## Repo layout
 
