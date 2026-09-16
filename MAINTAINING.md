@@ -78,17 +78,6 @@ make bundle          # -> dist/ (unsigned)
 
 - **Users need a Model-B-capable airom** (**≥ v0.1.9**). Older airom has no `rules update`.
   A new bundle reaches users who have installed one of those airom versions or newer.
-- **For full coverage the floor is higher: airom ≥ v0.3.5.** On 2026-09-16 this overlay
-  held 69 packs, 60 of them byte-identical copies of airom's built-ins kept in step by
-  hand — the shadow fork the governance note below warns about. Those 60 were deleted
-  and the other 9 promoted. Every deleted pack had been built in since v0.3.5 or earlier
-  (46 of them since v0.1.0), so a bundle user on v0.3.5+ lost nothing, while one on
-  v0.1.9–v0.3.4 now receives 12 fewer packs from the channel. The overlay is a staging
-  channel again and no longer carries the base vocabulary for old binaries; upgrading is
-  what does that.
-- **After promoting, delete the promoted packs only once an airom release ships them.**
-  Until then they are the bundle's entire payload, and deleting early takes that
-  detection away from every user until the release lands.
 - **Trust.** airom verifies the bundle signature against a public key **embedded in the
   airom binary**. The private half is this repo's `AIROM_RULES_SIGNING_KEY` secret and
   exists nowhere else. **Rotating the key means generating a new keypair, embedding the new
