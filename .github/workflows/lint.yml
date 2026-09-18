@@ -15,7 +15,12 @@ permissions:
 env:
   # Keep in step with release.yml: a PR must be checked by the same airom the
   # release will use, or green here means nothing there.
-  AIROM_VERSION: "0.4.6"
+  #
+  # NOT named AIROM_VERSION. airom maps every AIROM_* variable onto a config
+  # key and refuses to start on one it does not recognise, so that name made
+  # all 69 lint invocations exit with "unknown AIROM_* environment variable(s)
+  # for key(s): version". Keep workflow variables out of that namespace.
+  PINNED_AIROM_VERSION: "0.4.6"
   BENCH_CORPUS_SHA: "93f1a230b119999190c98a6e9b9a55ea7f199769"
 
 jobs:
@@ -31,7 +36,7 @@ jobs:
       # below said `pip install airom`, so every run silently tracked the newest
       # release and an airom change could turn an untouched pack red.
       - name: Install airom
-        run: pip install "airom==${{ env.AIROM_VERSION }}"
+        run: pip install "airom==${{ env.PINNED_AIROM_VERSION }}"
 
       # eol/ is in the same sweep: `airom rules lint` validates a model lifecycle
       # catalog against its own contract, and `rules test` on one is a no-op that

@@ -36,7 +36,10 @@ env:
   # "latest" would let an airom release change what this repo considers a
   # passing ruleset, with no commit here to explain it. Bump deliberately,
   # regenerating bench/baseline.json in the same commit if the numbers move.
-  AIROM_VERSION: "0.4.6"
+  #
+  # NOT named AIROM_VERSION: airom maps AIROM_* onto config keys and refuses to
+  # start on an unrecognised one. Keep workflow variables out of that namespace.
+  PINNED_AIROM_VERSION: "0.4.6"
   # The corpus commit the baseline was measured against. See the checkout step.
   BENCH_CORPUS_SHA: "93f1a230b119999190c98a6e9b9a55ea7f199769"
 
@@ -65,7 +68,7 @@ jobs:
           python-version: "3.12"
       - name: Validate every pack and catalog before releasing
         run: |
-          pip install "airom==${{ env.AIROM_VERSION }}"
+          pip install "airom==${{ env.PINNED_AIROM_VERSION }}"
           fail=0
           while IFS= read -r pack; do
             airom rules lint "$pack" || fail=1
