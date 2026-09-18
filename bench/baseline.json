@@ -1,0 +1,998 @@
+{
+  "schemaVersion": 1,
+  "airomVersion": "0.4.6",
+  "rulesVersion": "builtin",
+  "rulesHash": "02d5ab93a959f9cf21f2bd9e393542ed8ccdddd5793a86b0605280aea7b0972c",
+  "totals": {
+    "repo": "TOTAL",
+    "tp": 31,
+    "fp": 0,
+    "fn": 0,
+    "perKind": {
+      "dataset": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0
+      },
+      "embedding-model": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0
+      },
+      "framework": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0
+      },
+      "hosted-llm": {
+        "tp": 10,
+        "fp": 0,
+        "fn": 0
+      },
+      "infra": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0
+      },
+      "library": {
+        "tp": 8,
+        "fp": 0,
+        "fn": 0
+      },
+      "local-model-file": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0
+      },
+      "prompt": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0
+      },
+      "rag-pipeline": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0
+      },
+      "vector-db": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "perLang": {
+      "csharp": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0
+      },
+      "go": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0
+      },
+      "java": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0
+      },
+      "javascript": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0
+      },
+      "kotlin": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0
+      },
+      "manifest": {
+        "tp": 12,
+        "fp": 0,
+        "fn": 0
+      },
+      "model-file": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0
+      },
+      "other": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0
+      },
+      "python": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0
+      },
+      "rust": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0
+      },
+      "sql": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0
+      },
+      "typescript": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "version": {
+      "exact": 10,
+      "absentOk": 16,
+      "missing": 0,
+      "wrong": 0,
+      "ungraded": 5
+    },
+    "provider": {
+      "exact": 9,
+      "absentOk": 0,
+      "missing": 0,
+      "wrong": 0,
+      "ungraded": 22
+    },
+    "location": {
+      "valid": 31,
+      "invalid": 0,
+      "ungraded": 0
+    },
+    "filesProcessed": 609,
+    "unknowns": 0,
+    "filesTruncated": 0,
+    "bands": {
+      "high": {
+        "n": 16,
+        "correct": 16
+      },
+      "medium": {
+        "n": 14,
+        "correct": 14
+      }
+    }
+  },
+  "repos": [
+    {
+      "repo": "r-express",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "perKind": {},
+      "perLang": {},
+      "version": {
+        "exact": 0,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "provider": {
+        "exact": 0,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "location": {
+        "valid": 0,
+        "invalid": 0,
+        "ungraded": 0
+      },
+      "filesProcessed": 213,
+      "unknowns": 0,
+      "filesTruncated": 0,
+      "bands": {}
+    },
+    {
+      "repo": "r-flask",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "perKind": {},
+      "perLang": {},
+      "version": {
+        "exact": 0,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "provider": {
+        "exact": 0,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "location": {
+        "valid": 0,
+        "invalid": 0,
+        "ungraded": 0
+      },
+      "filesProcessed": 236,
+      "unknowns": 0,
+      "filesTruncated": 0,
+      "bands": {}
+    },
+    {
+      "repo": "r-gin",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "perKind": {},
+      "perLang": {},
+      "version": {
+        "exact": 0,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "provider": {
+        "exact": 0,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "location": {
+        "valid": 0,
+        "invalid": 0,
+        "ungraded": 0
+      },
+      "filesProcessed": 130,
+      "unknowns": 0,
+      "filesTruncated": 0,
+      "bands": {}
+    },
+    {
+      "repo": "s-csharp-semantickernel",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perKind": {
+        "framework": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "hosted-llm": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "perLang": {
+        "csharp": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "manifest": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "version": {
+        "exact": 1,
+        "absentOk": 1,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "provider": {
+        "exact": 1,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 1
+      },
+      "location": {
+        "valid": 2,
+        "invalid": 0,
+        "ungraded": 0
+      },
+      "filesProcessed": 2,
+      "unknowns": 0,
+      "filesTruncated": 0,
+      "bands": {
+        "high": {
+          "n": 1,
+          "correct": 1
+        },
+        "medium": {
+          "n": 1,
+          "correct": 1
+        }
+      }
+    },
+    {
+      "repo": "s-go-openai",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perKind": {
+        "hosted-llm": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "library": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "perLang": {
+        "go": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "manifest": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "version": {
+        "exact": 1,
+        "absentOk": 1,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "provider": {
+        "exact": 1,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 1
+      },
+      "location": {
+        "valid": 2,
+        "invalid": 0,
+        "ungraded": 0
+      },
+      "filesProcessed": 2,
+      "unknowns": 0,
+      "filesTruncated": 0,
+      "bands": {
+        "high": {
+          "n": 2,
+          "correct": 2
+        }
+      }
+    },
+    {
+      "repo": "s-infra-compose",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perKind": {
+        "hosted-llm": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "infra": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "perLang": {
+        "other": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "version": {
+        "exact": 0,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 2
+      },
+      "provider": {
+        "exact": 0,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 2
+      },
+      "location": {
+        "valid": 2,
+        "invalid": 0,
+        "ungraded": 0
+      },
+      "filesProcessed": 3,
+      "unknowns": 0,
+      "filesTruncated": 0,
+      "bands": {
+        "medium": {
+          "n": 2,
+          "correct": 2
+        }
+      }
+    },
+    {
+      "repo": "s-java-langchain4j",
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "perKind": {
+        "framework": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        },
+        "hosted-llm": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "perLang": {
+        "java": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "manifest": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "version": {
+        "exact": 2,
+        "absentOk": 1,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "provider": {
+        "exact": 1,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 2
+      },
+      "location": {
+        "valid": 3,
+        "invalid": 0,
+        "ungraded": 0
+      },
+      "filesProcessed": 2,
+      "unknowns": 0,
+      "filesTruncated": 0,
+      "bands": {
+        "high": {
+          "n": 2,
+          "correct": 2
+        },
+        "medium": {
+          "n": 1,
+          "correct": 1
+        }
+      }
+    },
+    {
+      "repo": "s-js-openai",
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "perKind": {
+        "hosted-llm": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "library": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "perLang": {
+        "javascript": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "manifest": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "version": {
+        "exact": 0,
+        "absentOk": 3,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "provider": {
+        "exact": 1,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 2
+      },
+      "location": {
+        "valid": 3,
+        "invalid": 0,
+        "ungraded": 0
+      },
+      "filesProcessed": 2,
+      "unknowns": 0,
+      "filesTruncated": 0,
+      "bands": {
+        "high": {
+          "n": 2,
+          "correct": 2
+        },
+        "medium": {
+          "n": 1,
+          "correct": 1
+        }
+      }
+    },
+    {
+      "repo": "s-kotlin-gradle",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perKind": {
+        "hosted-llm": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "library": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "perLang": {
+        "kotlin": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "version": {
+        "exact": 1,
+        "absentOk": 1,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "provider": {
+        "exact": 1,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 1
+      },
+      "location": {
+        "valid": 2,
+        "invalid": 0,
+        "ungraded": 0
+      },
+      "filesProcessed": 2,
+      "unknowns": 0,
+      "filesTruncated": 0,
+      "bands": {
+        "high": {
+          "n": 1,
+          "correct": 1
+        },
+        "medium": {
+          "n": 1,
+          "correct": 1
+        }
+      }
+    },
+    {
+      "repo": "s-models-binary",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perKind": {
+        "local-model-file": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "perLang": {
+        "model-file": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "version": {
+        "exact": 0,
+        "absentOk": 2,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "provider": {
+        "exact": 0,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 2
+      },
+      "location": {
+        "valid": 2,
+        "invalid": 0,
+        "ungraded": 0
+      },
+      "filesProcessed": 2,
+      "unknowns": 0,
+      "filesTruncated": 0,
+      "bands": {
+        "high": {
+          "n": 2,
+          "correct": 2
+        }
+      }
+    },
+    {
+      "repo": "s-negative-webapp",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "perKind": {},
+      "perLang": {},
+      "version": {
+        "exact": 0,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "provider": {
+        "exact": 0,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "location": {
+        "valid": 0,
+        "invalid": 0,
+        "ungraded": 0
+      },
+      "filesProcessed": 3,
+      "unknowns": 0,
+      "filesTruncated": 0,
+      "bands": {}
+    },
+    {
+      "repo": "s-python-adversarial",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perKind": {
+        "hosted-llm": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "perLang": {
+        "python": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "version": {
+        "exact": 0,
+        "absentOk": 1,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "provider": {
+        "exact": 1,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "location": {
+        "valid": 1,
+        "invalid": 0,
+        "ungraded": 0
+      },
+      "filesProcessed": 3,
+      "unknowns": 0,
+      "filesTruncated": 0,
+      "bands": {}
+    },
+    {
+      "repo": "s-python-rag",
+      "tp": 9,
+      "fp": 0,
+      "fn": 0,
+      "perKind": {
+        "dataset": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "embedding-model": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "framework": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "hosted-llm": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "library": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        },
+        "prompt": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "rag-pipeline": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "vector-db": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "perLang": {
+        "manifest": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 0
+        },
+        "other": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        },
+        "python": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "version": {
+        "exact": 4,
+        "absentOk": 2,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 3
+      },
+      "provider": {
+        "exact": 1,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 8
+      },
+      "location": {
+        "valid": 9,
+        "invalid": 0,
+        "ungraded": 0
+      },
+      "filesProcessed": 4,
+      "unknowns": 0,
+      "filesTruncated": 0,
+      "bands": {
+        "high": {
+          "n": 4,
+          "correct": 4
+        },
+        "medium": {
+          "n": 5,
+          "correct": 5
+        }
+      }
+    },
+    {
+      "repo": "s-rust-openai",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perKind": {
+        "hosted-llm": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "library": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "perLang": {
+        "manifest": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "rust": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "version": {
+        "exact": 0,
+        "absentOk": 2,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "provider": {
+        "exact": 1,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 1
+      },
+      "location": {
+        "valid": 2,
+        "invalid": 0,
+        "ungraded": 0
+      },
+      "filesProcessed": 2,
+      "unknowns": 0,
+      "filesTruncated": 0,
+      "bands": {
+        "high": {
+          "n": 1,
+          "correct": 1
+        },
+        "medium": {
+          "n": 1,
+          "correct": 1
+        }
+      }
+    },
+    {
+      "repo": "s-sql-pgvector",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perKind": {
+        "vector-db": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "perLang": {
+        "sql": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "version": {
+        "exact": 0,
+        "absentOk": 1,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "provider": {
+        "exact": 0,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 1
+      },
+      "location": {
+        "valid": 1,
+        "invalid": 0,
+        "ungraded": 0
+      },
+      "filesProcessed": 1,
+      "unknowns": 0,
+      "filesTruncated": 0,
+      "bands": {
+        "medium": {
+          "n": 1,
+          "correct": 1
+        }
+      }
+    },
+    {
+      "repo": "s-ts-anthropic",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perKind": {
+        "hosted-llm": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "library": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "perLang": {
+        "manifest": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "typescript": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "version": {
+        "exact": 1,
+        "absentOk": 1,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 0
+      },
+      "provider": {
+        "exact": 1,
+        "absentOk": 0,
+        "missing": 0,
+        "wrong": 0,
+        "ungraded": 1
+      },
+      "location": {
+        "valid": 2,
+        "invalid": 0,
+        "ungraded": 0
+      },
+      "filesProcessed": 2,
+      "unknowns": 0,
+      "filesTruncated": 0,
+      "bands": {
+        "high": {
+          "n": 1,
+          "correct": 1
+        },
+        "medium": {
+          "n": 1,
+          "correct": 1
+        }
+      }
+    }
+  ]
+}

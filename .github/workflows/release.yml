@@ -31,6 +31,15 @@ on:
 permissions:
   contents: write # create the tag, release, and upload assets
 
+env:
+  # Pinned so the lint contract AND the benchmark numbers are reproducible:
+  # "latest" would let an airom release change what this repo considers a
+  # passing ruleset, with no commit here to explain it. Bump deliberately,
+  # regenerating bench/baseline.json in the same commit if the numbers move.
+  AIROM_VERSION: "0.4.6"
+  # The corpus commit the baseline was measured against. See the checkout step.
+  BENCH_CORPUS_SHA: "93f1a230b119999190c98a6e9b9a55ea7f199769"
+
 # Serialize releases so two quick pushes can't both compute the same next
 # version; the second waits, then bumps from the tag the first created.
 concurrency:
@@ -56,13 +65,32 @@ jobs:
           python-version: "3.12"
       - name: Validate every pack and catalog before releasing
         run: |
-          pip install airom
+          pip install "airom==${{ env.AIROM_VERSION }}"
           fail=0
           while IFS= read -r pack; do
             airom rules lint "$pack" || fail=1
             airom rules test "$pack" || fail=1
           done < <(find rules eol -name '*.yaml' -not -path '*/testdata/*' | sort)
           exit $fail
+
+      # Pinned, not tracking the corpus's default branch. The corpus is a
+      # separate repo with its own cadence; an edit there must not fail a
+      # release here, and bumping this SHA is how a corpus change gets adopted
+      # deliberately. (airom's ci.yml claimed this pin for months while
+      # actually taking HEAD — hence the explicit ref.)
+      - name: Fetch the benchmark corpus
+        uses: actions/checkout@v4
+        with:
+          repository: airomhq/airom-bench
+          ref: ${{ env.BENCH_CORPUS_SHA }}
+          path: .bench-corpus
+
+      # The real gate. Lint proves each pack is well-formed; this proves the
+      # ruleset still DETECTS. Merging a pack change auto-publishes a signed
+      # bundle that clients install within a day, so this is the last point at
+      # which a detection regression can be stopped.
+      - name: Benchmark the effective ruleset
+        run: .github/scripts/bench_gate.sh .bench-corpus bench/baseline.json
 
       - name: Determine the next version
         id: ver

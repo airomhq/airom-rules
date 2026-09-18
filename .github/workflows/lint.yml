@@ -12,6 +12,12 @@ on:
 permissions:
   contents: read
 
+env:
+  # Keep in step with release.yml: a PR must be checked by the same airom the
+  # release will use, or green here means nothing there.
+  AIROM_VERSION: "0.4.6"
+  BENCH_CORPUS_SHA: "93f1a230b119999190c98a6e9b9a55ea7f199769"
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -21,9 +27,11 @@ jobs:
         with:
           python-version: "3.12"
 
-      # Pin airom so the lint contract is reproducible; bump deliberately.
+      # Pinned, and now actually pinned: this comment claimed it while the line
+      # below said `pip install airom`, so every run silently tracked the newest
+      # release and an airom change could turn an untouched pack red.
       - name: Install airom
-        run: pip install airom
+        run: pip install "airom==${{ env.AIROM_VERSION }}"
 
       # eol/ is in the same sweep: `airom rules lint` validates a model lifecycle
       # catalog against its own contract, and `rules test` on one is a no-op that
@@ -41,3 +49,16 @@ jobs:
             echo "::endgroup::"
           done < <(find rules eol -name '*.yaml' -not -path '*/testdata/*' | sort)
           exit $fail
+
+      # Same gate release.yml runs, here so a PR shows the regression before it
+      # is merged rather than after the bundle has published. Pinned corpus: an
+      # edit in that repo must not turn an unrelated PR here red.
+      - name: Fetch the benchmark corpus
+        uses: actions/checkout@v4
+        with:
+          repository: airomhq/airom-bench
+          ref: ${{ env.BENCH_CORPUS_SHA }}
+          path: .bench-corpus
+
+      - name: Benchmark the effective ruleset
+        run: .github/scripts/bench_gate.sh .bench-corpus bench/baseline.json
