@@ -83,24 +83,30 @@ make bundle          # -> dist/ (unsigned)
   exists nowhere else. **Rotating the key means generating a new keypair, embedding the new
   public key in airom, and shipping an airom release** — coordinate it there
   (`internal/rulesync/airom-rules.pub`), not here.
-- **The bundle REPLACES the embedded packs; it does not merge with them.** A scan picks
-  one base layer — the cached bundle if there is one, otherwise airom's built-ins
-  (`resolveRuleBase`, airom's `internal/app/rules.go`). Only `--rules` files layer on
-  top. So **this repo must stay complete**: for every user who has ever run
-  `airom rules update`, the bundle is the entire ruleset, and a pack missing here is a
-  pack that does not exist for them, no matter which airom they run.
-- **Governance, and its live caveat.** The intent is that stable rules get **promoted
-  upstream** into airom's embedded packs and then **deleted here**, so this repo stays a
-  staging channel rather than a shadow fork. **Do not perform the deletion half today.**
-  Because of the point above, deleting a promoted pack removes it from every bundle user
-  immediately. That is not theory: on 2026-09-16, 60 promoted duplicates were deleted on
-  exactly this reasoning, v0.1.8 shipped 9 packs, and a code-only scan that had reported
-  three components reported none. v0.1.9 restored them seven minutes later, byte-identical
-  to v0.1.7.
-  So **promotion means copy, not move.** The duplication between this repo and airom's
-  `rules/` is load-bearing until airom layers the bundle over the built-ins (merged by
-  rule ID, bundle winning, the way `--rules` already works). Promotion still earns its
-  keep — it serves `--no-cached-rules`, CI and offline scans, and it subjects a pack to
+- **How the bundle applies depends on the user's airom version.**
+  - **airom ≥ v0.4.6:** the bundle **layers over** the embedded packs, merged by rule ID
+    (add / override / disable), the same terms `--rules` has. A pack absent here falls
+    through to the built-in one.
+  - **airom ≤ v0.4.5:** the bundle **replaces** them. A scan picked one base layer, so a
+    pack absent here did not exist for that user at all.
+
+  So this repo must stay complete **for as long as you care about v0.4.5 and older**.
+  That is the constraint to weigh before deleting anything, and it expires by adoption,
+  not by a date.
+- **Governance, and what deletion still costs.** The intent is that stable rules get
+  **promoted upstream** into airom's embedded packs and then **deleted here**, so this
+  repo stays a staging channel rather than a shadow fork. v0.4.6 made that mechanically
+  safe; it did not make it free, because the users who most need this channel are the
+  ones slowest to upgrade the binary.
+  On 2026-09-16 the deletion half was performed under the old semantics: 60 promoted
+  duplicates removed, v0.1.8 shipped 9 packs, and a code-only scan that had reported
+  three components reported none. v0.1.9 restored them seven minutes later,
+  byte-identical to v0.1.7. **Deleting them now takes the same detection away from
+  anyone still on v0.4.5 or older** — a smaller blast radius than before, not a
+  different one. Decide that deliberately, say so in the commit, and prefer waiting for
+  adoption.
+  Promotion is worth doing either way — it serves `--no-cached-rules`, CI and offline
+  scans, and it subjects a pack to
   airom's catalog cross-check, which only reads embedded packs and which caught two
   provider mismatches the day those nine were promoted.
 

@@ -12,23 +12,24 @@ airom fs .                # scans now use it (see airom's docs)
 
 ## How it fits together
 
-airom embeds a copy of these packs as its **offline floor** — it always works
-with no network. `airom rules update` fetches a newer bundle from this repo's
-releases, verifies it, and caches it; scans then use the cached bundle **instead
-of** the embedded packs, and `--rules` overlays still layer on top. A scan itself
+airom embeds these packs as its **offline floor** — it always works with no
+network. `airom rules update` fetches a newer bundle from this repo's releases,
+verifies it, and caches it; scans then **layer that bundle over** the embedded
+packs, merged by rule ID, with `--rules` overlays on top of both. A scan itself
 never touches the network.
 
-That "instead of" is the thing to remember: the bundle is the base layer, not an
-addition to it. For anyone who has run `rules update`, **this repo is their
-entire ruleset**, so it has to stay complete.
+Layering is what makes a bundle safe to be partial: a pack this repo does not
+carry falls through to airom's built-in one, so shipping nine packs does not
+retract the other sixty.
 
 - **This repo is the source of truth for rule content.** New/experimental/long-tail
   framework rules land here first and reach users via `rules update`.
 - **Stable rules get promoted upstream** into airom's embedded packs on airom's
-  own release cadence — as a **copy, not a move**. Deleting a promoted pack here
-  removes it from every bundle user on their next update, whatever airom version
-  they run. See MAINTAINING.md, "The airom coupling", for what that cost on
-  2026-09-16 and what would make deletion safe.
+  own release cadence, and can then be deleted here.
+- **One caveat before deleting: airom ≤ v0.4.5 used the bundle *instead of* the
+  built-ins**, so for those users a pack missing here is a pack that does not
+  exist. Deleting a promoted pack retracts it from anyone still on that line. See
+  MAINTAINING.md, "The airom coupling", for what that cost on 2026-09-16.
 
 ## Repo layout
 
