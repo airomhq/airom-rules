@@ -51,6 +51,36 @@ the embedding model vs the LLM library). Then scaffold the winner with
    ```
 4. Open a PR. The lint workflow gates it.
 
+## Update a model lifecycle catalog
+
+`eol/<provider>.yaml` holds retirement facts, and they ship in the same signed
+bundle as the packs. Refreshing them here reaches users with `airom rules update`
+instead of an airom release — the reason the catalogs live in this repo.
+
+1. **Open the provider's own deprecation page** (the `source:` URL in the file).
+   Every record is transcribed from it. Nothing is inferred from a model's name,
+   and nothing is carried over from a blog post or a changelog summary.
+2. **Edit the records**, then set `verified:` to today for that provider. That
+   date is published in every scan that uses the catalog, so it is a claim about
+   when a human last read the page — not a formatting detail.
+3. **Keep the file complete.** airom overlays a catalog per provider and the
+   overlay wins entirely within that provider, so a record you delete is deleted
+   for bundle users. Ship the whole provider, not a diff.
+4. **Validate:**
+   ```bash
+   make lint                        # packs and catalogs
+   airom rules lint eol/openai.yaml # or one catalog
+   ```
+   `airom rules test` on a catalog is a no-op that says so: there are no fixtures
+   to run, `lint` is the whole contract.
+5. Open a PR. Merging cuts a release exactly as a pack change does — `eol/**` is
+   in the release trigger.
+
+**Sync airom's copy at the next scanner release.** airom compiles a catalog in as
+its offline floor, for `--no-cached-rules`, CI, and anyone who never updates. It
+does not refresh itself, so copy the files into airom's `internal/eol/catalog/`
+when you cut a release, or its floor drifts behind this repo indefinitely.
+
 ## Releases are automatic
 
 **You don't cut releases by hand.** Merging a pack change to `main` **auto-cuts a signed

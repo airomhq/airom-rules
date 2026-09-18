@@ -17,6 +17,10 @@ on:
     paths:
       - "rules/**/*.yaml"
       - "!rules/**/testdata/**"
+      # Without this a catalog edit changes the bundle and never publishes —
+      # and refreshing retirement dates without a scanner release is the reason
+      # the lifecycle catalogs live in this repo at all.
+      - "eol/**/*.yaml"
   workflow_dispatch:
     inputs:
       version:
@@ -50,14 +54,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Validate every pack before releasing
+      - name: Validate every pack and catalog before releasing
         run: |
           pip install airom
           fail=0
           while IFS= read -r pack; do
             airom rules lint "$pack" || fail=1
             airom rules test "$pack" || fail=1
-          done < <(find rules -name '*.yaml' -not -path '*/testdata/*' | sort)
+          done < <(find rules eol -name '*.yaml' -not -path '*/testdata/*' | sort)
           exit $fail
 
       - name: Determine the next version
@@ -81,7 +85,11 @@ jobs:
       - name: Build and sign the bundle
         env:
           AIROM_RULES_SIGNING_KEY: ${{ secrets.AIROM_RULES_SIGNING_KEY }}
-        run: go run ./tools/bundle -rules rules -version "${{ steps.ver.outputs.version }}" -out dist
+        # -eol is passed explicitly so the tool fails the release if the
+        # directory is gone or empty. Omitting the flag would fall back to a
+        # silent "no catalogs", which no client can tell apart from a bundle
+        # that never carried any.
+        run: go run ./tools/bundle -rules rules -eol eol -version "${{ steps.ver.outputs.version }}" -out dist
 
       - name: Create the release
         uses: softprops/action-gh-release@v2

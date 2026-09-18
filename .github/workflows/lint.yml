@@ -25,7 +25,12 @@ jobs:
       - name: Install airom
         run: pip install airom
 
-      - name: Lint and test every pack
+      # eol/ is in the same sweep: `airom rules lint` validates a model lifecycle
+      # catalog against its own contract, and `rules test` on one is a no-op that
+      # says so (a catalog has no fixtures), so both take one loop. A missing
+      # eol/ fails here loudly rather than quietly shipping a bundle with no
+      # lifecycle data.
+      - name: Lint and test every pack and catalog
         run: |
           set -uo pipefail
           fail=0
@@ -34,5 +39,5 @@ jobs:
             airom rules lint "$pack" || fail=1
             airom rules test "$pack" || fail=1
             echo "::endgroup::"
-          done < <(find rules -name '*.yaml' -not -path '*/testdata/*' | sort)
+          done < <(find rules eol -name '*.yaml' -not -path '*/testdata/*' | sort)
           exit $fail

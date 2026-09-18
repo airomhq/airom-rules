@@ -36,11 +36,40 @@ retract the other sixty.
 ```
 rules/<category>/<provider>.yaml      # one pack per provider
 rules/<category>/testdata/<provider>/ # ≥1 positive + ≥1 negative fixture per rule
+eol/<provider>.yaml                   # model lifecycle catalogs (retirement dates)
 tools/bundle/                         # builds + signs the release bundle
 ```
 
 Categories mirror airom: `models`, `embeddings`, `frameworks`, `vectordb`,
-`infra`, `params`, `prompts`, `datasets`, `security`.
+`infra`, `params`, `prompts`, `datasets`, `security`. `eol/` is not a category —
+it is a sibling namespace with its own schema, which airom's rule loader skips
+and its lifecycle loader reads.
+
+## Model lifecycle catalogs
+
+`eol/<provider>.yaml` carries the retirement facts behind AIROM's lifecycle
+overlay: per model, what the provider announced, when, and the URL it was
+transcribed from. They ship in the same signed bundle as the rule packs, which
+is the point — **retirement dates change on a provider's calendar, not on
+AIROM's release schedule**, so `airom rules update` refreshes them without a new
+binary.
+
+Two things to know before editing one:
+
+- **The overlay is per provider, and within a provider it wins entirely.** A
+  bundle carrying `eol/openai.yaml` replaces airom's built-in OpenAI records and
+  leaves Anthropic's alone. So a record dropped here IS dropped for bundle users
+  — that is the unit of intent, and it is why the file has to stay complete
+  rather than carrying only what changed.
+- **This repo is where a catalog is edited first.** airom keeps a copy compiled
+  in as its offline floor, refreshed from here at release time. Editing airom's
+  copy alone reaches only users who never run `rules update`; editing this one
+  reaches everyone else within a day.
+
+Every record is transcribed from the provider's own deprecation page, never
+inferred from a naming pattern, and carries the date a maintainer last checked
+it. A model absent from the file gets **no** lifecycle claim — not a quiet
+"supported".
 
 ## Adding a rule pack
 

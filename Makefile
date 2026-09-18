@@ -1,11 +1,13 @@
 # airom-rules maintenance helpers. See MAINTAINING.md.
 
-# Lint AND test every pack with airom's own validator (same as CI).
+# Lint AND test every pack and lifecycle catalog with airom's own validator
+# (the same set CI walks). `rules lint` checks a catalog against its own
+# contract; `rules test` on one reports that it has no fixtures to run.
 # Requires: pip install airom
 .PHONY: lint
 lint:
 	@fail=0; \
-	for pack in $$(find rules -name '*.yaml' -not -path '*/testdata/*' | sort); do \
+	for pack in $$(find rules eol -name '*.yaml' -not -path '*/testdata/*' | sort); do \
 		airom rules lint "$$pack" || fail=1; \
 		airom rules test "$$pack" || fail=1; \
 	done; \
@@ -14,7 +16,7 @@ lint:
 # Build an unsigned bundle into dist/ for local inspection (Go 1.25+).
 .PHONY: bundle
 bundle:
-	go run ./tools/bundle -rules rules -version v0.0.0-local -out dist -unsigned
+	go run ./tools/bundle -rules rules -eol eol -version v0.0.0-local -out dist -unsigned
 
 # Ranked "what to add next" gap report over a corpus of cloned repos.
 # Usage: make candidates CORPUS=~/ai-corpus

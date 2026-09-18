@@ -21,6 +21,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io/fs"
@@ -38,14 +39,61 @@ type manifest struct {
 	SHA256    string `json:"sha256"`
 	RuleCount int    `json:"ruleCount"`
 	PackCount int    `json:"packCount"`
+	// Informational, like the two counts above. Safe to add: airom parses the
+	// manifest with a plain json.Unmarshal, so an older client ignores it, and
+	// the signature covers the bytes either way.
+	CatalogCount int `json:"catalogCount,omitempty"`
+}
+
+// entry is one file destined for the tarball: where it goes, where it comes
+// from, and whether its "- id:" lines are rules. Catalogs share that syntax
+// without being rules.
+type entry struct {
+	tarName string
+	srcPath string
+	isRule  bool
 }
 
 const tarballName = "airom-rules.tar.gz"
 
 var ruleLine = regexp.MustCompile(`(?m)^\s*-\s+id:\s`)
 
+// collectCatalogs returns the model lifecycle catalogs under eolDir, destined
+// for eol/ in the tarball — the path internal/eol.LoadBundle walks, and one
+// that internal/ruleengine skips when loading rule packs. A missing directory
+// is not an error: a bundle may legitimately carry no lifecycle data.
+func collectCatalogs(eolDir string) ([]entry, error) {
+	if eolDir == "" {
+		return nil, nil
+	}
+	if _, err := os.Stat(eolDir); errors.Is(err, fs.ErrNotExist) {
+		return nil, nil
+	}
+	var out []entry
+	err := filepath.WalkDir(eolDir, func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() || !strings.HasSuffix(d.Name(), ".yaml") || strings.HasPrefix(d.Name(), ".") {
+			return nil
+		}
+		rel, err := filepath.Rel(eolDir, p)
+		if err != nil {
+			return err
+		}
+		out = append(out, entry{tarName: "eol/" + filepath.ToSlash(rel), srcPath: p})
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].tarName < out[j].tarName })
+	return out, nil
+}
+
 func main() {
 	rulesDir := flag.String("rules", "rules", "directory of rule packs")
+	eolDir := flag.String("eol", "eol", "directory of model lifecycle catalogs (packed under eol/)")
 	version := flag.String("version", "", "release version, e.g. v1.2.0 (required)")
 	outDir := flag.String("out", "dist", "output directory for the bundle assets")
 	unsigned := flag.Bool("unsigned", false, "skip signing (no .sig produced)")
@@ -53,12 +101,22 @@ func main() {
 	if *version == "" {
 		fatal("-version is required (e.g. v1.2.0)")
 	}
-	if err := run(*rulesDir, *version, *outDir, *unsigned); err != nil {
+	// An explicit -eol must produce catalogs. The release workflow passes it, so
+	// a renamed or emptied directory fails the release instead of quietly
+	// shipping a bundle with no lifecycle data — which is indistinguishable, to
+	// every client, from a bundle that never carried any.
+	eolExplicit := false
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == "eol" {
+			eolExplicit = true
+		}
+	})
+	if err := run(*rulesDir, *eolDir, eolExplicit, *version, *outDir, *unsigned); err != nil {
 		fatal(err.Error())
 	}
 }
 
-func run(rulesDir, version, outDir string, unsigned bool) error {
+func run(rulesDir, eolDir string, eolExplicit bool, version, outDir string, unsigned bool) error {
 	packs, err := collectPacks(rulesDir)
 	if err != nil {
 		return err
@@ -66,18 +124,33 @@ func run(rulesDir, version, outDir string, unsigned bool) error {
 	if len(packs) == 0 {
 		return fmt.Errorf("no rule packs found under %s", rulesDir)
 	}
+	entries := make([]entry, 0, len(packs))
+	for _, rel := range packs {
+		entries = append(entries, entry{tarName: rel, srcPath: filepath.Join(rulesDir, filepath.FromSlash(rel)), isRule: true})
+	}
 
-	tarball, rules, err := buildTarball(rulesDir, packs)
+	catalogs, err := collectCatalogs(eolDir)
+	if err != nil {
+		return err
+	}
+	// eolDir == "" is the opt-out the error below names, so it must not trip it.
+	if len(catalogs) == 0 && eolExplicit && eolDir != "" {
+		return fmt.Errorf("-eol %s holds no .yaml catalogs; pass -eol \"\" to publish a bundle without lifecycle data", eolDir)
+	}
+	entries = append(entries, catalogs...)
+
+	tarball, rules, err := buildTarball(entries)
 	if err != nil {
 		return err
 	}
 	sum := sha256.Sum256(tarball)
 	mf := manifest{
-		Version:   version,
-		Tarball:   tarballName,
-		SHA256:    hex.EncodeToString(sum[:]),
-		RuleCount: rules,
-		PackCount: len(packs),
+		Version:      version,
+		Tarball:      tarballName,
+		SHA256:       hex.EncodeToString(sum[:]),
+		RuleCount:    rules,
+		PackCount:    len(packs),
+		CatalogCount: len(catalogs),
 	}
 	manifestBytes, err := json.Marshal(mf)
 	if err != nil {
@@ -104,7 +177,8 @@ func run(rulesDir, version, outDir string, unsigned bool) error {
 		}
 	}
 
-	fmt.Printf("bundle %s: %d pack(s), %d rule(s), sha256 %s\n", version, mf.PackCount, mf.RuleCount, mf.SHA256)
+	fmt.Printf("bundle %s: %d pack(s), %d rule(s), %d lifecycle catalog(s), sha256 %s\n",
+		version, mf.PackCount, mf.RuleCount, mf.CatalogCount, mf.SHA256)
 	if unsigned {
 		fmt.Println("(unsigned — for local inspection only)")
 	}
@@ -144,21 +218,27 @@ func collectPacks(rulesDir string) ([]string, error) {
 
 // buildTarball writes a deterministic gzipped tar (sorted entries, zeroed
 // timestamps) and returns it plus the total rule count.
-func buildTarball(rulesDir string, packs []string) ([]byte, int, error) {
+func buildTarball(entries []entry) ([]byte, int, error) {
 	var buf bytes.Buffer
 	gz, _ := gzip.NewWriterLevel(&buf, gzip.BestCompression)
 	gz.ModTime = time.Time{} // deterministic gzip header
 	tw := tar.NewWriter(gz)
 
+	sort.Slice(entries, func(i, j int) bool { return entries[i].tarName < entries[j].tarName })
+
 	rules := 0
-	for _, rel := range packs {
-		data, err := os.ReadFile(filepath.Join(rulesDir, filepath.FromSlash(rel)))
+	for _, e := range entries {
+		data, err := os.ReadFile(e.srcPath)
 		if err != nil {
 			return nil, 0, err
 		}
-		rules += len(ruleLine.FindAllIndex(data, -1))
+		// Only rule packs. A catalog's "- id: claude-opus-5" matches ruleLine
+		// too, so counting it here would report 90 rules for 16.
+		if e.isRule {
+			rules += len(ruleLine.FindAllIndex(data, -1))
+		}
 		hdr := &tar.Header{
-			Name:     rel,
+			Name:     e.tarName,
 			Mode:     0o644,
 			Size:     int64(len(data)),
 			Typeflag: tar.TypeReg,
