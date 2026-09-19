@@ -108,6 +108,17 @@ make bundle          # -> dist/ (unsigned)
 
 - **Users need a Model-B-capable airom** (**≥ v0.1.9**). Older airom has no `rules update`.
   A new bundle reaches users who have installed one of those airom versions or newer.
+  That floor is now **in the manifest** (`minAirom`), not only in this paragraph: a
+  client new enough to read the field refuses a bundle above its own version at install,
+  with one message, rather than installing something it will fail to parse on every scan
+  afterwards. Raise it with `-min-airom` in the same commit that starts using a pack
+  feature older airom cannot parse — and only then, since raising it cuts off everyone
+  below the new floor.
+- **Every bundle states when it was built** (`createdAt`, inside the signed bytes).
+  Versions are monotonic but undated, so without it nobody can tell a bundle published
+  yesterday from one published a year ago. `airom rules update` prints it with an age.
+  Nothing refuses an old bundle: a quiet month here is not a fault, and the number that
+  would make it one is not ours to pick.
 - **Trust.** airom verifies the bundle signature against a public key **embedded in the
   airom binary**. The private half is this repo's `AIROM_RULES_SIGNING_KEY` secret and
   exists nowhere else. **Rotating the key means generating a new keypair, embedding the new

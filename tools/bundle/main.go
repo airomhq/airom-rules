@@ -43,6 +43,19 @@ type manifest struct {
 	// manifest with a plain json.Unmarshal, so an older client ignores it, and
 	// the signature covers the bytes either way.
 	CatalogCount int `json:"catalogCount,omitempty"`
+
+	// CreatedAt is when this bundle was built (RFC 3339, UTC). Versions are
+	// monotonic but undated, so without it a client cannot tell a bundle
+	// published yesterday from one published a year ago. It sits inside the
+	// signed bytes, which is what makes it an attested claim rather than a
+	// number anyone in the path can rewrite.
+	CreatedAt string `json:"createdAt"`
+
+	// MinAirom is the oldest airom that can read this bundle. Clients new
+	// enough to read the field refuse a bundle above their own version at
+	// install, with one clear message, instead of installing something they
+	// will fail to parse on every scan afterwards.
+	MinAirom string `json:"minAirom,omitempty"`
 }
 
 // entry is one file destined for the tarball: where it goes, where it comes
@@ -97,6 +110,11 @@ func main() {
 	version := flag.String("version", "", "release version, e.g. v1.2.0 (required)")
 	outDir := flag.String("out", "dist", "output directory for the bundle assets")
 	unsigned := flag.Bool("unsigned", false, "skip signing (no .sig produced)")
+	// v0.1.9 is the oldest airom with `rules update` at all (MAINTAINING.md,
+	// "The airom coupling"), so it is the floor every bundle has always had —
+	// now stated in the manifest instead of only in prose. Raise it in the same
+	// commit that starts using a pack feature older airom cannot parse.
+	minAirom := flag.String("min-airom", "v0.1.9", "oldest airom that can read this bundle")
 	flag.Parse()
 	if *version == "" {
 		fatal("-version is required (e.g. v1.2.0)")
@@ -111,12 +129,12 @@ func main() {
 			eolExplicit = true
 		}
 	})
-	if err := run(*rulesDir, *eolDir, eolExplicit, *version, *outDir, *unsigned); err != nil {
+	if err := run(*rulesDir, *eolDir, eolExplicit, *version, *minAirom, *outDir, *unsigned); err != nil {
 		fatal(err.Error())
 	}
 }
 
-func run(rulesDir, eolDir string, eolExplicit bool, version, outDir string, unsigned bool) error {
+func run(rulesDir, eolDir string, eolExplicit bool, version, minAirom, outDir string, unsigned bool) error {
 	packs, err := collectPacks(rulesDir)
 	if err != nil {
 		return err
@@ -151,6 +169,11 @@ func run(rulesDir, eolDir string, eolExplicit bool, version, outDir string, unsi
 		RuleCount:    rules,
 		PackCount:    len(packs),
 		CatalogCount: len(catalogs),
+		// The TARBALL stays reproducible (sorted entries, zeroed mtimes); this
+		// timestamp lives in the manifest, so two builds of identical content
+		// still agree on the sha256 that matters.
+		CreatedAt: time.Now().UTC().Format(time.RFC3339),
+		MinAirom:  minAirom,
 	}
 	manifestBytes, err := json.Marshal(mf)
 	if err != nil {
@@ -179,6 +202,7 @@ func run(rulesDir, eolDir string, eolExplicit bool, version, outDir string, unsi
 
 	fmt.Printf("bundle %s: %d pack(s), %d rule(s), %d lifecycle catalog(s), sha256 %s\n",
 		version, mf.PackCount, mf.RuleCount, mf.CatalogCount, mf.SHA256)
+	fmt.Printf("  built %s, needs airom %s or newer\n", mf.CreatedAt, mf.MinAirom)
 	if unsigned {
 		fmt.Println("(unsigned — for local inspection only)")
 	}
