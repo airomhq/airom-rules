@@ -53,17 +53,25 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # need the tag history to compute the next version
 
-      - uses: actions/setup-go@v5
+      # A minor line resolved to its newest patch at run time. Without
+      # check-latest, setup-go takes whatever patch the runner image has cached,
+      # which lags go.dev by weeks — and this is the job that holds the signing
+      # key, so its toolchain is the one place currency matters most. Go 1.25
+      # went out of support, which is also why go.mod's floor moved to 1.26.
+      # Standard-library security fixes arrive only as Go patch releases, and
+      # Dependabot never proposes those.
+      - uses: actions/setup-go@v7
         with:
-          go-version: "1.25"
+          go-version: "1.26"
+          check-latest: true
 
       # Gate: never ship a bundle that fails airom's own validator. PRs are
       # already linted, but a direct push to main isn't — so re-check here.
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Validate every pack and catalog before releasing
@@ -82,7 +90,7 @@ jobs:
       # deliberately. (airom's ci.yml claimed this pin for months while
       # actually taking HEAD — hence the explicit ref.)
       - name: Fetch the benchmark corpus
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: airomhq/airom-bench
           ref: ${{ env.BENCH_CORPUS_SHA }}

@@ -2,4 +2,4 @@
 // YAML data; this module exists only for tools/bundle (stdlib-only).
 module github.com/airomhq/airom-rules
 
-go 1.25
+go 1.26

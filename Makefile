@@ -13,7 +13,7 @@ lint:
 	done; \
 	exit $$fail
 
-# Build an unsigned bundle into dist/ for local inspection (Go 1.25+).
+# Build an unsigned bundle into dist/ for local inspection (Go 1.26+).
 .PHONY: bundle
 bundle:
 	go run ./tools/bundle -rules rules -eol eol -version v0.0.0-local -out dist -unsigned

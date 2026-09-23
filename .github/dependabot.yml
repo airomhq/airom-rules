@@ -1,0 +1,43 @@
+version: 2
+updates:
+  # The tools/bundle module. It is stdlib-only by design, so this is normally
+  # quiet — but quiet is not the same as absent, and the one thing it builds is
+  # the signed bundle every user installs.
+  - package-ecosystem: gomod
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 10
+    labels: ["dependencies", "go"]
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      go-dependencies:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  # The actions pinned in .github/workflows/*. Without this they rot silently:
+  # these workflows sat on checkout@v4 and setup-go@v5 while airom had moved to
+  # v7, and nothing would ever have said so.
+  #
+  # Majors are deliberately NOT filtered out. softprops/action-gh-release is at
+  # v3 here while this repo pins v2, and a major bump to the step that publishes
+  # a signed release should arrive as a PR carrying its changelog, to be read,
+  # rather than be taken on trust or left indefinitely.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 10
+    labels: ["dependencies", "ci"]
+    commit-message:
+      prefix: "chore(ci)"
+    groups:
+      github-actions:
+        patterns: ["*"]

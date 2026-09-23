@@ -27,8 +27,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -59,7 +59,7 @@ jobs:
       # is merged rather than after the bundle has published. Pinned corpus: an
       # edit in that repo must not turn an unrelated PR here red.
       - name: Fetch the benchmark corpus
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: airomhq/airom-bench
           ref: ${{ env.BENCH_CORPUS_SHA }}

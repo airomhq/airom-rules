@@ -7,7 +7,7 @@ Everything a maintainer does lives here; you rarely need the airom monorepo.
 
 ```bash
 pip install airom          # the validator + the tool users run (airom rules lint/test/update)
-# Go 1.25+ only if you want to build a bundle locally (tools/bundle)
+# Go 1.26+ only if you want to build a bundle locally (tools/bundle)
 ```
 
 ## Finding what to add (don't pick names by hand)
