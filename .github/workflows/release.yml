@@ -131,7 +131,7 @@ jobs:
         run: go run ./tools/bundle -rules rules -eol eol -version "${{ steps.ver.outputs.version }}" -out dist
 
       - name: Create the release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.ver.outputs.version }}
           name: ${{ steps.ver.outputs.version }}
