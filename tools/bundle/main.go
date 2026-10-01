@@ -71,30 +71,35 @@ const tarballName = "airom-rules.tar.gz"
 
 var ruleLine = regexp.MustCompile(`(?m)^\s*-\s+id:\s`)
 
-// collectCatalogs returns the model lifecycle catalogs under eolDir, destined
-// for eol/ in the tarball — the path internal/eol.LoadBundle walks, and one
-// that internal/ruleengine skips when loading rule packs. A missing directory
-// is not an error: a bundle may legitimately carry no lifecycle data.
-func collectCatalogs(eolDir string) ([]entry, error) {
-	if eolDir == "" {
+// collectCatalogs returns the catalogs under dir, destined for ns/ in the
+// tarball — the path the owning package's LoadBundle walks, and one that
+// internal/ruleengine skips when loading rule packs (its NonRulePackDirs). A
+// missing directory is not an error: a bundle may legitimately carry neither
+// lifecycle nor exploitation data.
+//
+// Parameterized by namespace rather than copied per catalog: the two differ
+// only in which directory they read and which prefix they write, and a copy
+// would be the kind that drifts.
+func collectCatalogs(ns, dir string) ([]entry, error) {
+	if dir == "" {
 		return nil, nil
 	}
-	if _, err := os.Stat(eolDir); errors.Is(err, fs.ErrNotExist) {
+	if _, err := os.Stat(dir); errors.Is(err, fs.ErrNotExist) {
 		return nil, nil
 	}
 	var out []entry
-	err := filepath.WalkDir(eolDir, func(p string, d fs.DirEntry, err error) error {
+	err := filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 		if d.IsDir() || !strings.HasSuffix(d.Name(), ".yaml") || strings.HasPrefix(d.Name(), ".") {
 			return nil
 		}
-		rel, err := filepath.Rel(eolDir, p)
+		rel, err := filepath.Rel(dir, p)
 		if err != nil {
 			return err
 		}
-		out = append(out, entry{tarName: "eol/" + filepath.ToSlash(rel), srcPath: p})
+		out = append(out, entry{tarName: ns + "/" + filepath.ToSlash(rel), srcPath: p})
 		return nil
 	})
 	if err != nil {
@@ -107,6 +112,20 @@ func collectCatalogs(eolDir string) ([]entry, error) {
 func main() {
 	rulesDir := flag.String("rules", "rules", "directory of rule packs")
 	eolDir := flag.String("eol", "eol", "directory of model lifecycle catalogs (packed under eol/)")
+	// Default OFF, deliberately. A bundle carrying kev/ is unreadable to every
+	// airom whose rule walk does not skip that namespace: the walker parses
+	// kev/cisa.yaml as a rule pack, the whole ruleset load fails, and the
+	// client silently drops back to its built-in packs — the v0.1.8 failure
+	// mode, with the channel's rules turned off. minAirom does not save them,
+	// because the clients at risk (v0.4.6 and older) are exactly the ones that
+	// predate the manifest field and ignore it.
+	//
+	// So publishing the catalog this way is gated on adoption, not on the code
+	// being ready: pass -kev kev once v0.4.7-and-newer is the floor you are
+	// willing to serve, and raise -min-airom in the same breath. Until then the
+	// embedded catalog in airom is the only copy, refreshed by tools/kev-gen on
+	// airom's own release cadence.
+	kevDir := flag.String("kev", "", "directory of known-exploited catalogs (packed under kev/); EMPTY BY DEFAULT — see the comment, publishing one breaks older airom")
 	version := flag.String("version", "", "release version, e.g. v1.2.0 (required)")
 	outDir := flag.String("out", "dist", "output directory for the bundle assets")
 	unsigned := flag.Bool("unsigned", false, "skip signing (no .sig produced)")
@@ -123,18 +142,21 @@ func main() {
 	// a renamed or emptied directory fails the release instead of quietly
 	// shipping a bundle with no lifecycle data — which is indistinguishable, to
 	// every client, from a bundle that never carried any.
-	eolExplicit := false
+	eolExplicit, kevExplicit := false, false
 	flag.Visit(func(f *flag.Flag) {
-		if f.Name == "eol" {
+		switch f.Name {
+		case "eol":
 			eolExplicit = true
+		case "kev":
+			kevExplicit = true
 		}
 	})
-	if err := run(*rulesDir, *eolDir, eolExplicit, *version, *minAirom, *outDir, *unsigned); err != nil {
+	if err := run(*rulesDir, *eolDir, eolExplicit, *kevDir, kevExplicit, *version, *minAirom, *outDir, *unsigned); err != nil {
 		fatal(err.Error())
 	}
 }
 
-func run(rulesDir, eolDir string, eolExplicit bool, version, minAirom, outDir string, unsigned bool) error {
+func run(rulesDir, eolDir string, eolExplicit bool, kevDir string, kevExplicit bool, version, minAirom, outDir string, unsigned bool) error {
 	packs, err := collectPacks(rulesDir)
 	if err != nil {
 		return err
@@ -147,7 +169,7 @@ func run(rulesDir, eolDir string, eolExplicit bool, version, minAirom, outDir st
 		entries = append(entries, entry{tarName: rel, srcPath: filepath.Join(rulesDir, filepath.FromSlash(rel)), isRule: true})
 	}
 
-	catalogs, err := collectCatalogs(eolDir)
+	catalogs, err := collectCatalogs("eol", eolDir)
 	if err != nil {
 		return err
 	}
@@ -156,6 +178,21 @@ func run(rulesDir, eolDir string, eolExplicit bool, version, minAirom, outDir st
 		return fmt.Errorf("-eol %s holds no .yaml catalogs; pass -eol \"\" to publish a bundle without lifecycle data", eolDir)
 	}
 	entries = append(entries, catalogs...)
+
+	// The CISA known-exploited catalog travels the same way, in its own
+	// namespace. It is the one catalog whose staleness is a security property
+	// rather than an inconvenience: CISA adds entries several times a week, and
+	// an old catalog under-reports exploitation that is already public — which
+	// is why this bundle, not an airom release, is the lever that refreshes it.
+	kevCatalogs, err := collectCatalogs("kev", kevDir)
+	if err != nil {
+		return err
+	}
+	if len(kevCatalogs) == 0 && kevExplicit && kevDir != "" {
+		return fmt.Errorf("-kev %s holds no .yaml catalogs; pass -kev \"\" to publish a bundle without exploitation data", kevDir)
+	}
+	entries = append(entries, kevCatalogs...)
+	catalogs = append(catalogs, kevCatalogs...)
 
 	tarball, rules, err := buildTarball(entries)
 	if err != nil {
@@ -200,7 +237,7 @@ func run(rulesDir, eolDir string, eolExplicit bool, version, minAirom, outDir st
 		}
 	}
 
-	fmt.Printf("bundle %s: %d pack(s), %d rule(s), %d lifecycle catalog(s), sha256 %s\n",
+	fmt.Printf("bundle %s: %d pack(s), %d rule(s), %d catalog(s), sha256 %s\n",
 		version, mf.PackCount, mf.RuleCount, mf.CatalogCount, mf.SHA256)
 	fmt.Printf("  built %s, needs airom %s or newer\n", mf.CreatedAt, mf.MinAirom)
 	if unsigned {

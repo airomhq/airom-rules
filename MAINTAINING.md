@@ -134,6 +134,23 @@ make bundle          # -> dist/ (unsigned)
   So this repo must stay complete **for as long as you care about v0.4.5 and older**.
   That is the constraint to weigh before deleting anything, and it expires by adoption,
   not by a date.
+- **The KEV catalog is not published here yet, and the reason is the same one.**
+  airom carries a CISA known-exploited catalog (`internal/kev/catalog`), and it
+  can read a newer one from a bundle's `kev/` namespace. Publishing one from
+  here would break every airom whose rule walk does not skip that namespace:
+  the walker parses `kev/cisa.yaml` as a rule pack, the ruleset load fails
+  whole, and the client falls back to its built-in packs — v0.1.8's failure
+  mode with a different file. `minAirom` does not rescue them, because the
+  clients at risk (**v0.4.6 and older**) predate that manifest field and ignore
+  it; only v0.4.7+ refuses a bundle it cannot read.
+
+  So `tools/bundle` defaults `-kev` to empty and ships nothing. Turn it on by
+  passing `-kev kev` **and** raising `-min-airom` in the same commit, once
+  v0.4.7+ is the floor you are willing to serve. Until then the catalog is
+  refreshed on airom's release cadence by `go run ./tools/kev-gen`, which is
+  slower than CISA publishes — a tradeoff the overlay states in the scan, since
+  a stale catalog under-reports exploitation rather than over-reporting it.
+
 - **Governance, and what deletion still costs.** The intent is that stable rules get
   **promoted upstream** into airom's embedded packs and then **deleted here**, so this
   repo stays a staging channel rather than a shadow fork. v0.4.6 made that mechanically
