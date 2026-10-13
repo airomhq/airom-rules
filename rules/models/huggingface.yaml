@@ -2,17 +2,27 @@
 pack: huggingface
 version: 1
 rules:
-  # AutoModel*.from_pretrained("org/name") / AutoTokenizer.from_pretrained(...) etc.
-  # Capture the "org/name" repo id (the slash disambiguates from bare local paths).
-  - id: huggingface/from-pretrained
-    kind: hosted-llm
-    provider: huggingface
-    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
-    keywords: ["from_pretrained"]
-    pattern: '\.from_pretrained\s*\(\s*["''](?P<model>[\w.\-]+/[\w.\-]+)["'']'
-    regions: [code, string]
-    claim: { name: "${model}" }
-    confidence: 0.85
+  # huggingface/from-pretrained is GONE FROM THIS CHANNEL on purpose, and must
+  # not come back as-is.
+  #
+  # It was a byte-identical copy of airom's embedded rule, left over from when a
+  # bundle REPLACED the embedded packs instead of layering over them. Since
+  # airom v0.4.6 the bundle is a layer, so a copy here adds nothing — it only
+  # overrides the embedded rule by ID. airom then changed that rule's kind from
+  # hosted-llm to hub-model (a hub id names weights you run yourself, not an API
+  # model: airomhq/airom#36), and this copy silently reverted the fix for every
+  # user with a bundle installed — which is nearly everyone, because
+  # auto-update is on by default.
+  #
+  # Re-adding it would need kind: hub-model, which airom <= v0.4.7 rejects as
+  # not rule-expressible, and a rejected pack fails the WHOLE ruleset rather
+  # than just that rule. So it stays out until there is a real reason to
+  # override the embedded rule, and then only behind a MinAirom floor.
+  #
+  # huggingface/pipeline below is kept deliberately. It is a duplicate too, but
+  # its kind is unchanged, so it costs a layering binary nothing — while for a
+  # user still on <= v0.4.5, where the bundle IS the whole ruleset, removing it
+  # would delete detection outright.
 
   # transformers pipeline(...) — lowercase call distinguishes it from sklearn Pipeline().
   - id: huggingface/pipeline
