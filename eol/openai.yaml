@@ -18,6 +18,46 @@ source: https://developers.openai.com/api/docs/deprecations
 verified: 2026-09-28
 models:
   # ── retired: the API no longer serves these ───────────────────────────────
+  # The InstructGPT completion family, announced 2023-07-06 and shut off
+  # 2024-01-04. The page names gpt-3.5-turbo-instruct as the replacement for
+  # all of them, which the overlay then reports as itself deprecated — that
+  # chain is the truth and is more useful than silently retargeting it.
+  #
+  # code-davinci-002 is deliberately absent: the page lists it under both the
+  # InstructGPT announcement and the earlier Codex one, with different shutdown
+  # dates, and transcribing a contradiction as fact is worse than leaving the
+  # record out. A rule still detects it, so it appears in the AIBOM with no
+  # lifecycle claim — which is "unknown", the honest state.
+  - id: text-davinci-003
+    state: deprecated
+    announced: 2023-07-06
+    shutdown: 2024-01-04
+    replacement: gpt-3.5-turbo-instruct
+
+  - id: text-davinci-002
+    state: deprecated
+    announced: 2023-07-06
+    shutdown: 2024-01-04
+    replacement: gpt-3.5-turbo-instruct
+
+  - id: text-curie-001
+    state: deprecated
+    announced: 2023-07-06
+    shutdown: 2024-01-04
+    replacement: gpt-3.5-turbo-instruct
+
+  - id: text-babbage-001
+    state: deprecated
+    announced: 2023-07-06
+    shutdown: 2024-01-04
+    replacement: gpt-3.5-turbo-instruct
+
+  - id: text-ada-001
+    state: deprecated
+    announced: 2023-07-06
+    shutdown: 2024-01-04
+    replacement: gpt-3.5-turbo-instruct
+
   - id: gpt-4-32k
     aliases: [gpt-4-32k-0613, gpt-4-32k-0314]
     state: deprecated

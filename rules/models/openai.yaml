@@ -14,6 +14,30 @@ rules:
     claim: { name: "${model}" }
     confidence: 0.85
 
+  # STAGED HERE on purpose, and due for deletion. This rule is already in
+  # airom's embedded packs but not yet in a RELEASE, and the lifecycle records
+  # for this family ship in eol/openai.yaml of this same bundle. A bundle
+  # replaces the embedded catalog per provider, so without this rule a user on
+  # the current airom binary would take the five new records and have nothing
+  # able to detect them — dead records, which is the exact failure the channel
+  # exists to prevent. Delete this rule once the airom release embedding it is
+  # out (governance: this is a staging channel, not a shadow fork).
+  #
+  # text-davinci-003 and siblings: shut off 2024-01-04. openai/model-literal
+  # needs a gpt-/chatgpt-/o-series prefix and openai/media-model-literal's
+  # (?:babbage|davinci)-\d{3} stops at the `text-` prefix, so nothing matched
+  # these at all. The three-digit suffix is required: bare `ada` is also a live
+  # Python package and a person's name. (airomhq/airom#35)
+  - id: openai/legacy-completion-literal
+    kind: hosted-llm
+    provider: openai
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["text-davinci", "text-curie", "text-babbage", "text-ada", "code-davinci"]
+    pattern: '\b(?i:[a-z0-9_]*model[a-z0-9_]*)["'']?\s*(?:[:=]|\()\s*["''](?P<model>(?:text|code)-(?:davinci|curie|babbage|ada)-\d{3})["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.85
+
   # SDK call shape: chat.completions.create / responses.create — mirrors the canonical
   # example in docs/rule-schema.md (uses edge via the special `model` field + params).
   - id: openai/chat-call

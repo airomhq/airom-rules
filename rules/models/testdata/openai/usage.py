@@ -33,3 +33,15 @@ adapter = "gpt-neo-125m"  # not an OpenAI id and not in a model= position
 
 # airom-ok: openai/chat-call
 existing = client.chat.completions.retrieve("resp_123")
+
+# A model OpenAI shut off in January 2024, matched by nothing before this rule.
+# airom: openai/legacy-completion-literal
+legacy = OpenAI(model_name="text-davinci-003", temperature=0)
+
+# The 002 bases are a different, still-served family.
+# airom-ok: openai/legacy-completion-literal
+base = OpenAI(model_name="davinci-002")
+
+# A bare family word is not evidence enough to stamp provider=openai on it.
+# airom-ok: openai/legacy-completion-literal
+ambiguous = Thing(model="ada")
