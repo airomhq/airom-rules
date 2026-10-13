@@ -14,14 +14,18 @@ rules:
     claim: { name: "${model}" }
     confidence: 0.85
 
-  # STAGED HERE on purpose, and due for deletion. This rule is already in
-  # airom's embedded packs but not yet in a RELEASE, and the lifecycle records
-  # for this family ship in eol/openai.yaml of this same bundle. A bundle
-  # replaces the embedded catalog per provider, so without this rule a user on
-  # the current airom binary would take the five new records and have nothing
-  # able to detect them — dead records, which is the exact failure the channel
-  # exists to prevent. Delete this rule once the airom release embedding it is
-  # out (governance: this is a staging channel, not a shadow fork).
+  # STAGED HERE on purpose. Do NOT delete it just because airom now embeds it.
+  #
+  # The lifecycle records for this family ship in eol/openai.yaml of this same
+  # bundle, and a bundle replaces the embedded catalog per provider. airom
+  # embeds this rule from v0.5.0 — so a user still on v0.4.7 takes the five new
+  # records with nothing able to detect them unless this copy is here. Dead
+  # records are the exact failure the channel exists to prevent: a retired
+  # model then reports as "unknown", silence that reads as safety.
+  #
+  # Deletable once v0.5.0 is adopted, not once it is released — the same
+  # adoption question as the other duplicated packs. Until then this copy is
+  # load-bearing, which is what a staging channel is for.
   #
   # text-davinci-003 and siblings: shut off 2024-01-04. openai/model-literal
   # needs a gpt-/chatgpt-/o-series prefix and openai/media-model-literal's
